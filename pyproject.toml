@@ -6,7 +6,11 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "automation-server-client",
+    "eflyt-client",
+    "odk-tools",
 ]
 
 [tool.uv.sources]
 automation-server-client = { git = "https://github.com/odense-rpa/automation-server-client.git", tag = "v0.3.0" }
+eflyt-client = { git = "https://github.com/odense-rpa/eflyt" }
+odk-tools = { git = "https://github.com/odense-rpa/odk-tools.git" }
