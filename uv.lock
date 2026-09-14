@@ -55,7 +55,7 @@ wheels = [
 [[package]]
 name = "eflyt-client"
 version = "0.1.0"
-source = { git = "https://github.com/odense-rpa/eflyt#cb3ca0433cdb89247042e69163141e282f512128" }
+source = { git = "https://github.com/odense-rpa/eflyt#82d1969879d7c1c5ec4452cc5602e7d128e20fcd" }
 dependencies = [
     { name = "playwright" },
     { name = "pytest" },

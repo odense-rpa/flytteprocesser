@@ -6,6 +6,12 @@ from automation_server_client import AutomationServer, Workqueue, WorkItemError,
 from eflyt_client import EflytClient
 from odk_tools.tracking import Tracker
 
+from processes import (
+    handle_simpel_flytning,
+    handle_særlig_adresse_boligselskab,
+    handle_boligselskab,
+)
+
 procesnavn = "Flytteprocesser"
 eflyt_client: EflytClient = None
 tracker: Tracker = None
@@ -81,10 +87,27 @@ def process_workqueue(workqueue: Workqueue):
     for item in workqueue:
         with item:
             data = item.data  # Item data deserialized from json as dict
- 
+
             try:
-                # Process the item here
-                pass
+                sagsnummer = data["sagsnummer"]
+                flyttetype = data["flyttetype"]
+
+                if flyttetype == "Simpel flytning":
+                    # Kæden til "Simpel flytning - send brev" håndteres
+                    # internt i handle_simpel_flytning, jf. Blue
+                    # Prism-processens subsheet-kald i samme kørsel.
+                    handle_simpel_flytning(eflyt_client, sagsnummer, data)
+                elif flyttetype in (
+                    "Særlig adresse, Boligselskab",
+                    "Boligselskab, Særlig adresse",
+                ):
+                    handle_særlig_adresse_boligselskab(eflyt_client, sagsnummer, data)
+                elif flyttetype == "Boligselskab":
+                    handle_boligselskab(eflyt_client, sagsnummer, data)
+                else:
+                    raise WorkItemError(f"Ukendt flyttetype: {flyttetype}")
+
+                item.data = data
             except WorkItemError as e:
                 # A WorkItemError represents a soft error that indicates the item should be passed to manual processing or a business logic fault
                 logger.error(f"Error processing item: {data}. Error: {e}")
@@ -101,7 +124,8 @@ if __name__ == "__main__":
     eflyt_client = EflytClient(
         base_url=eflyt_credentials.data["url"],
         username=eflyt_credentials.username,
-        password=eflyt_credentials.password
+        password=eflyt_credentials.password,
+        headless=False
     )
 
     tracker = Tracker(
