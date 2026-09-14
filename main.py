@@ -10,17 +10,67 @@ procesnavn = "Flytteprocesser"
 eflyt_client: EflytClient = None
 tracker: Tracker = None
 
+# Svarer til "Flytteprocesser"-kollektionen i Blue Prism-processen: de kombinationer
+# af sagstilstand/flyttetype/indeholder status der skal fremsøges og lægges i køen.
+FLYTTEPROCESSER = [
+    {"sagstilstand": "Ubehandlet", "flyttetype": "Simpel flytning", "indeholder_status": "Ubehandlet"},
+    {"sagstilstand": "Ubehandlet", "flyttetype": "Særlig adresse", "indeholder_status": "Ubehandlet"},
+    {"sagstilstand": "Ubehandlet", "flyttetype": "Boligselskab", "indeholder_status": "Ubehandlet"},
+]
+
+# Svarer til "Korrekt flyttetype?"-beslutningen i Blue Prism-processen.
+ACCEPTEREDE_FLYTTETYPER = {
+    "Simpel flytning",
+    "Boligselskab, Særlig adresse",
+    "Særlig adresse, Boligselskab",
+    "Boligselskab",
+}
+
 
 def populate_queue(workqueue: Workqueue):
     logger = logging.getLogger(__name__)
 
     logger.info("Hello from populate workqueue!")
 
-    flyttedato_fra = (datetime.now() - timedelta(days=2)).strftime("%d-%m-%Y")
-    flyttedato_til = (datetime.now() + timedelta(days=4)).strftime("%d-%m-%Y")
-    flyttesager = eflyt_client.fremsøg_liste(flyttedato_fra=flyttedato_fra, flyttedato_til=flyttedato_til)
+    # Svarer til "Sæt datoer" i Blue Prism-processen.
+    flyttedato_fra = (datetime.now() - timedelta(days=4)).strftime("%d-%m-%Y")
+    flyttedato_til = (datetime.now() + timedelta(days=2)).strftime("%d-%m-%Y")
 
-    print("hej")
+    for proces in FLYTTEPROCESSER:
+        flyttesager = eflyt_client.fremsøg_liste(
+            flyttedato_fra=flyttedato_fra,
+            flyttedato_til=flyttedato_til,
+            sagstilstand=proces["sagstilstand"],
+            flyttetype=proces["flyttetype"],
+            indeholder_status=proces["indeholder_status"],
+        )
+
+        for sag in flyttesager:
+            # Svarer til "Korrekt flyttetype?"
+            if sag["flyttetype"] not in ACCEPTEREDE_FLYTTETYPER:
+                continue
+
+            sagsnummer = sag["sagsnummer"]
+
+            # Svarer til "Fundet i kø": spring over hvis sagen allerede findes i
+            # køen og ikke er fejlet (fejlede sager må gerne fremsøges igen).
+            eksisterende_items = workqueue.get_item_by_reference(sagsnummer)
+            if any(item.status != WorkItemStatus.FAILED for item in eksisterende_items):
+                continue
+
+            # Svarer til "Sæt SR data" + "Tilføj til kø".
+            item_data = {
+                "flyttedato": sag["flyttedato"],
+                "sagsnummer": sagsnummer,
+                "flyttetype": sag["flyttetype"],
+                "status": sag["status"],
+                "cpr": sag["cpr"],
+                "navn": sag["navn"],
+                "sagsbehandler": sag["sagsbehandler"],
+            }
+            workqueue.add_item(data=item_data, reference=sagsnummer)
+
+
 
 
 def process_workqueue(workqueue: Workqueue):
