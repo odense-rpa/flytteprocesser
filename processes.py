@@ -73,14 +73,17 @@ def handle_simpel_flytning(
         # Svarer til "Sæt 'simpel flyt - send brev'" + at "Simpel flyt - send
         # brev"-subsheetet kaldes lige efter i samme kørsel.
         data["flyttetype"] = "Simpel flytning - send brev"
-        handle_simpel_flyt_send_brev(eflyt_client, sagsnummer, data)
+        handle_simpel_flyt_send_brev(eflyt_client, sagsnummer, data, sagsdetaljer)
     else:
         # Svarer til "Godkend sag".
         eflyt_client.godkend_sag(sagsnummer)
 
 
 def handle_simpel_flyt_send_brev(
-    eflyt_client: EflytClient, sagsnummer: str, data: dict
+    eflyt_client: EflytClient,
+    sagsnummer: str,
+    data: dict,
+    sagsdetaljer: dict | None = None,
 ) -> None:
     """Svarer til subsheetet "Simpel flyt - send brev".
 
@@ -88,8 +91,16 @@ def handle_simpel_flyt_send_brev(
     fraflytningsadresse) der har boet længst på adressen, og sender en
     logiværtserklæring til vedkommende - men kun hvis der er plads nok til
     både de nuværende beboere og de indflyttere sagen omhandler.
+
+    Args:
+        sagsdetaljer: Sagsdetaljer for sagen, hvis de allerede er hentet af
+            den kaldende proces (fx `handle_simpel_flytning`). Undgår et
+            overflødigt gen-kald af `hent_sagsdetaljer`, som ville fejle
+            fordi Eflyt på dette tidspunkt allerede har navigeret væk fra
+            søgesiden og over på sagens behandlingsside.
     """
-    sagsdetaljer = eflyt_client.hent_sagsdetaljer(sagsnummer)
+    if sagsdetaljer is None:
+        sagsdetaljer = eflyt_client.hent_sagsdetaljer(sagsnummer)
     beboere = sagsdetaljer["beboere"]
     antal_beboere = len(beboere)
 

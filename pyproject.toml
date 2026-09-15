@@ -1,6 +1,6 @@
 [project]
-name = "process-template"
-version = "0.3.0"
+name = "flytteprocesser"
+version = "0.3.1"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"

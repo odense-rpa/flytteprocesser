@@ -107,7 +107,8 @@ def process_workqueue(workqueue: Workqueue):
                 else:
                     raise WorkItemError(f"Ukendt flyttetype: {flyttetype}")
 
-                item.data = data
+                tracker.track_task(procesnavn)
+
             except WorkItemError as e:
                 # A WorkItemError represents a soft error that indicates the item should be passed to manual processing or a business logic fault
                 logger.error(f"Error processing item: {data}. Error: {e}")
@@ -125,7 +126,7 @@ if __name__ == "__main__":
         base_url=eflyt_credentials.data["url"],
         username=eflyt_credentials.username,
         password=eflyt_credentials.password,
-        headless=False
+        headless=True
     )
 
     tracker = Tracker(
