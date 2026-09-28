@@ -106,7 +106,9 @@ def process_workqueue(workqueue: Workqueue):
                     handle_boligselskab(eflyt_client, sagsnummer, data)
                 else:
                     raise WorkItemError(f"Ukendt flyttetype: {flyttetype}")
-
+                # hvis der er note, så gør bla bla
+                if "note" in data and data["note"]:
+                    eflyt_client.skriv_note(sagsnummer, data["note"])
                 tracker.track_task(procesnavn)
 
             except WorkItemError as e:
@@ -126,7 +128,7 @@ if __name__ == "__main__":
         base_url=eflyt_credentials.data["url"],
         username=eflyt_credentials.username,
         password=eflyt_credentials.password,
-        headless=True
+        headless=False
     )
 
     tracker = Tracker(

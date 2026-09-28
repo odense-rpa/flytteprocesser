@@ -163,11 +163,11 @@ def handle_simpel_flyt_send_brev(
         )
 
         if digital_borger:
-            data["besked"] = f"{dags_dato}: Der er sendt logivært - Tyra"
+            data["note"] = f"{dags_dato}: Der er sendt logivært - Tyra"
         else:
-            data["besked"] = f"{dags_dato}: Borger er ikke digital - Tyra"
+            data["note"] = f"{dags_dato}: Borger er ikke digital - Tyra"
     else:
-        data["besked"] = f"{dags_dato}: Der er ikke plads - Tyra"
+        data["note"] = f"{dags_dato}: Der er ikke plads - Tyra"
 
 
 def handle_særlig_adresse_boligselskab(
