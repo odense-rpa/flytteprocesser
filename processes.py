@@ -114,13 +114,6 @@ def handle_simpel_flyt_send_brev(
         beboer["alder"] = _cpr_til_alder(beboer["cpr"])
         tilbageværende_beboere.append(beboer)
 
-    # Svarer til "Tæl beboere over 18" (Utility - Odk Linq: Count med filter
-    # "[Alder] >= 16" - navnet på tællevariablen matcher ikke selve filteret
-    # i den oprindelige Blue Prism-proces, men vi bevarer adfærden).
-    antal_beboere_over_18 = sum(
-        1 for beboer in tilbageværende_beboere if beboer["alder"] >= 16
-    )
-
     # Svarer til "Sorter beboere på tilflytningsdato" (ascending) + "Sæt
     # længstboende": den først tilflyttede har boet længst på adressen.
     tilbageværende_beboere.sort(
@@ -159,13 +152,13 @@ def handle_simpel_flyt_send_brev(
             sagsnummer=sagsnummer,
             brevtype="- Logiværtserklæring beboer",
             modtager=logivært["navn"],
-            antal_beboere=antal_beboere_over_18,
+            antal_beboere=antal_beboere,
         )
 
         if digital_borger:
             data["note"] = f"{dags_dato}: Der er sendt logivært - Tyra"
         else:
-            data["note"] = f"{dags_dato}: Borger er ikke digital - Tyra"
+            data["note"] = f"{dags_dato} - Borger er ikke digital - Tyra"
     else:
         data["note"] = f"{dags_dato}: Der er ikke plads - Tyra"
 
