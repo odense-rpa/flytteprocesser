@@ -53,7 +53,7 @@ def handle_simpel_flytning(
     sagen til manuel brevudsendelse ved at ændre flyttetypen.
     """
     # Svarer til "Hent sag".
-    sagsdetaljer = eflyt_client.hent_sagsdetaljer(sagsnummer)
+    sagsdetaljer = eflyt_client.sager.hent_sagsdetaljer(sagsnummer)
     beboere = sagsdetaljer["beboere"]
 
     antal_beboere = len(beboere)
@@ -76,7 +76,7 @@ def handle_simpel_flytning(
         handle_simpel_flyt_send_brev(eflyt_client, sagsnummer, data, sagsdetaljer)
     else:
         # Svarer til "Godkend sag".
-        eflyt_client.godkend_sag(sagsnummer)
+        eflyt_client.sager.godkend_sag(sagsnummer)
 
 
 def handle_simpel_flyt_send_brev(
@@ -100,7 +100,7 @@ def handle_simpel_flyt_send_brev(
             søgesiden og over på sagens behandlingsside.
     """
     if sagsdetaljer is None:
-        sagsdetaljer = eflyt_client.hent_sagsdetaljer(sagsnummer)
+        sagsdetaljer = eflyt_client.sager.hent_sagsdetaljer(sagsnummer)
     beboere = sagsdetaljer["beboere"]
     antal_beboere = len(beboere)
 
@@ -152,10 +152,10 @@ def handle_simpel_flyt_send_brev(
     # Svarer til "Er der plads?".
     if antal_rum >= antal_beboere + antal_indflyttere:
         # Svarer til "Send brev: logivært beboere".
-        # TODO: eflyt_client.send_brev skal implementeres - sender et brev af
+        # eflyt_client.breve.send_brev sender et brev af
         # en given type til en modtager og returnerer om modtageren er
         # digital (svarer til Blue Prism-handlingen "Send brev").
-        digital_borger = eflyt_client.send_brev(
+        digital_borger = eflyt_client.breve.send_brev(
             sagsnummer=sagsnummer,
             brevtype="- Logiværtserklæring beboer",
             modtager=logivært["navn"],

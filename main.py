@@ -43,7 +43,7 @@ def populate_queue(workqueue: Workqueue):
     flyttedato_til = (datetime.now() + timedelta(days=2)).strftime("%d-%m-%Y")
 
     for proces in FLYTTEPROCESSER:
-        flyttesager = eflyt_client.fremsøg_liste(
+        flyttesager = eflyt_client.sager.fremsoeg_liste(
             flyttedato_fra=flyttedato_fra,
             flyttedato_til=flyttedato_til,
             sagstilstand=proces["sagstilstand"],
@@ -108,7 +108,7 @@ def process_workqueue(workqueue: Workqueue):
                     raise WorkItemError(f"Ukendt flyttetype: {flyttetype}")
                 # hvis der er note, så gør bla bla
                 if "note" in data and data["note"]:
-                    eflyt_client.skriv_note(sagsnummer, data["note"])
+                    eflyt_client.sager.skriv_note(sagsnummer, data["note"])
                 tracker.track_task(procesnavn)
 
             except WorkItemError as e:
