@@ -65,14 +65,12 @@ def populate_queue(workqueue: Workqueue):
                 continue
 
             # Svarer til "Sæt SR data" + "Tilføj til kø".
+            # Kun det nødvendige gemmes i køen (dataminimering): resten af
+            # sagens data hentes direkte fra Eflyt ved behandlingen.
             item_data = {
-                "flyttedato": sag["flyttedato"],
                 "sagsnummer": sagsnummer,
                 "flyttetype": sag["flyttetype"],
-                "status": sag["status"],
                 "cpr": sag["cpr"],
-                "navn": sag["navn"],
-                "sagsbehandler": sag["sagsbehandler"],
             }
             workqueue.add_item(data=item_data, reference=sagsnummer)
 
@@ -113,7 +111,7 @@ def process_workqueue(workqueue: Workqueue):
 
             except WorkItemError as e:
                 # A WorkItemError represents a soft error that indicates the item should be passed to manual processing or a business logic fault
-                logger.error(f"Error processing item: {data}. Error: {e}")
+                logger.error(f"Error processing item {sagsnummer}. Error: {e}")
                 item.fail(str(e))
 
 

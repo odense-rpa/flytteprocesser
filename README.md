@@ -5,7 +5,7 @@ Automatisering der behandler flyttesager i Eflyt for Odense Kommune. Python-geni
 ## Hvad gør robotten?
 
 1. **Fremsøger flyttesager** i Eflyt inden for et rullende datointerval (4 dage tilbage til 2 dage frem) for tre sagstyper: *Simpel flytning*, *Særlig adresse* og *Boligselskab*
-2. **Filtrerer** sager på korrekt flyttetype og lægger nye/ikke-fejlede sager i arbejdskøen med sagsnummer som reference
+2. **Filtrerer** sager på korrekt flyttetype og lægger nye/ikke-fejlede sager i arbejdskøen med sagsnummer som reference (kun sagsnummer, flyttetype og CPR gemmes i køen)
 3. **Simpel flytning**: Henter sagsdetaljer og tæller beboere med/uden registreret fraflytningsadresse
    - Godkender sagen automatisk hvis alle beboere fraflytter
    - Ellers findes den beboer der har boet længst på adressen, og der sendes en logiværtserklæring til vedkommende – hvis der er plads nok på adressen
