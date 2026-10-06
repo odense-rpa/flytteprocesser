@@ -41,16 +41,19 @@ def _cpr_til_alder(cpr: str, i_dag: datetime | None = None) -> int:
     return alder
 
 
-def handle_simpel_flytning(
-    eflyt_client: EflytClient, sagsnummer: str, data: dict
+def _godkend_eller_send_brev(
+    eflyt_client: EflytClient,
+    sagsnummer: str,
+    data: dict,
+    send_brev_flyttetype: str,
 ) -> None:
-    """Svarer til subsheetet "BKF - flytteprocesser" for flyttetypen
-    "Simpel flytning".
+    """Fælles logik for subsheetene "Simpel flyt" og "Boligselskab".
 
     Fremsøger sagen, tæller hvor mange beboere der har en registreret
     fraflytningsadresse, og godkender sagen automatisk hvis alle beboere har
     en fraflytningsadresse og deres antal stemmer overens. Ellers markeres
-    sagen til manuel brevudsendelse ved at ændre flyttetypen.
+    sagen til brevudsendelse ved at sætte flyttetypen til
+    `send_brev_flyttetype`, og brevet sendes med det samme.
     """
     # Svarer til "Hent sag".
     sagsdetaljer = eflyt_client.sager.hent_sagsdetaljer(sagsnummer)
@@ -70,22 +73,45 @@ def handle_simpel_flytning(
     ) or antal_beboere != antal_fraflytninger
 
     if skal_sende_brev:
-        # Svarer til "Sæt 'simpel flyt - send brev'" + at "Simpel flyt - send
-        # brev"-subsheetet kaldes lige efter i samme kørsel.
-        data["flyttetype"] = "Simpel flytning - send brev"
-        handle_simpel_flyt_send_brev(eflyt_client, sagsnummer, data, sagsdetaljer)
+        # Svarer til "Sæt '... - send brev'" + at send brev-subsheetet kaldes
+        # lige efter i samme kørsel.
+        data["flyttetype"] = send_brev_flyttetype
+        _send_logivaert_brev(eflyt_client, sagsnummer, data, sagsdetaljer)
     else:
         # Svarer til "Godkend sag".
         eflyt_client.sager.godkend_sag(sagsnummer)
 
 
-def handle_simpel_flyt_send_brev(
+def handle_simpel_flytning(
+    eflyt_client: EflytClient, sagsnummer: str, data: dict
+) -> None:
+    """Svarer til subsheetet "Simpel flyt" (flyttetypen "Simpel flytning")."""
+    _godkend_eller_send_brev(
+        eflyt_client, sagsnummer, data, "Simpel flytning - send brev"
+    )
+
+
+def handle_boligselskab(
+    eflyt_client: EflytClient, sagsnummer: str, data: dict
+) -> None:
+    """Svarer til subsheetet "Boligselskab" (flyttetypen "Boligselskab").
+
+    Logikken er identisk med "Simpel flyt" i Blue Prism-processen; kun
+    flyttetypen der sættes når der skal sendes brev er forskellig.
+    """
+    _godkend_eller_send_brev(
+        eflyt_client, sagsnummer, data, "Boligselskab - send brev"
+    )
+
+
+def _send_logivaert_brev(
     eflyt_client: EflytClient,
     sagsnummer: str,
     data: dict,
     sagsdetaljer: dict | None = None,
 ) -> None:
-    """Svarer til subsheetet "Simpel flyt - send brev".
+    """Svarer til subsheetene "Simpel flyt - send brev" og "Boligselskab -
+    send brev", som er identiske.
 
     Finder ud af hvem af de tilbageværende beboere (dem uden en registreret
     fraflytningsadresse) der har boet længst på adressen, og sender en
@@ -94,7 +120,7 @@ def handle_simpel_flyt_send_brev(
 
     Args:
         sagsdetaljer: Sagsdetaljer for sagen, hvis de allerede er hentet af
-            den kaldende proces (fx `handle_simpel_flytning`). Undgår et
+            den kaldende proces (fx `_godkend_eller_send_brev`). Undgår et
             overflødigt gen-kald af `hent_sagsdetaljer`, som ville fejle
             fordi Eflyt på dette tidspunkt allerede har navigeret væk fra
             søgesiden og over på sagens behandlingsside.
@@ -174,13 +200,3 @@ def handle_særlig_adresse_boligselskab(
     raise NotImplementedError(
         "handle_saerlig_adresse_boligselskab er endnu ikke implementeret"
     )
-
-
-def handle_boligselskab(
-    eflyt_client: EflytClient, sagsnummer: str, data: dict
-) -> None:
-    """Svarer til subsheetet for flyttetypen "Boligselskab".
-
-    TODO: Endnu ikke implementeret - mangler subsheetet.
-    """
-    raise NotImplementedError("handle_boligselskab er endnu ikke implementeret")
