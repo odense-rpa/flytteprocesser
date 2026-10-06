@@ -9,7 +9,9 @@ Automatisering der behandler flyttesager i Eflyt for Odense Kommune. Python-geni
 3. **Simpel flytning / Boligselskab** (identisk logik): Henter sagsdetaljer og tæller beboere med/uden registreret fraflytningsadresse
    - Godkender sagen automatisk hvis alle beboere fraflytter
    - Ellers findes den beboer der har boet længst på adressen, og der sendes en logiværtserklæring til vedkommende – hvis der er plads nok på adressen
-4. **Særlig adresse**: Endnu ikke implementeret
+4. **Særlig adresse**: Godkender aldrig automatisk
+   - Skriver en note hvis adressen ikke bliver tom, eller hvis der ikke er plads
+   - Ellers (alle beboere fraflytter) sendes en kontrakt til anmelderen
 
 ## Forudsætninger
 

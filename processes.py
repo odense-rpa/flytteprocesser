@@ -184,7 +184,7 @@ def _send_logivaert_brev(
         if digital_borger:
             data["note"] = f"{dags_dato}: Der er sendt logivært - Tyra"
         else:
-            data["note"] = f"{dags_dato} - Borger er ikke digital - Tyra"
+            data["note"] = f"{dags_dato}: Borger er ikke digital - Tyra"
     else:
         data["note"] = f"{dags_dato}: Der er ikke plads - Tyra"
 
@@ -192,11 +192,44 @@ def _send_logivaert_brev(
 def handle_særlig_adresse_boligselskab(
     eflyt_client: EflytClient, sagsnummer: str, data: dict
 ) -> None:
-    """Svarer til subsheetet for flyttetyperne "Særlig adresse, Boligselskab"
-    og "Boligselskab, Særlig adresse".
+    """Svarer til subsheetet "Særlig adresse" (flyttetyperne "Særlig adresse,
+    Boligselskab" og "Boligselskab, Særlig adresse").
 
-    TODO: Endnu ikke implementeret - mangler resten af subsheetet.
+    Der godkendes aldrig automatisk. Hvis adressen ikke bliver tom, eller
+    der ikke er plads, skrives blot en note til sagsbehandleren. Bliver
+    adressen tom (alle beboere fraflytter), sendes en kontrakt til anmelderen.
     """
-    raise NotImplementedError(
-        "handle_saerlig_adresse_boligselskab er endnu ikke implementeret"
+    # Svarer til "Hent sag" + "Tæl fraflytninger".
+    sagsdetaljer = eflyt_client.sager.hent_sagsdetaljer(sagsnummer)
+    beboere = sagsdetaljer["beboere"]
+
+    antal_beboere = len(beboere)
+    antal_fraflytninger = sum(
+        1 for beboer in beboere if beboer["fraflytning_til"] != ""
     )
+
+    dags_dato = datetime.now().strftime("%d-%m-%Y")
+
+    # Svarer til "Note om tom?": ingen fraflytter, men der bor nogen.
+    if antal_fraflytninger == 0 and antal_beboere > 0:
+        data["note"] = f"{dags_dato}: Adresse ikke tom - Tyra"
+        return
+
+    # Svarer til "Note om plads?": der bliver boende nogen på adressen.
+    if antal_beboere - antal_fraflytninger > 0:
+        data["note"] = f"{dags_dato}: Der er ikke plads - Tyra"
+        return
+
+    # Svarer til "Send brev": modtageren af kontrakten findes automatisk
+    # (anmelderen), så `modtager` er tom, jf. Blue Prism-processen.
+    digital_borger = eflyt_client.breve.send_brev(
+        sagsnummer=sagsnummer,
+        brevtype="- Send kontrakt",
+        modtager="",
+        antal_beboere=antal_beboere,
+    )
+
+    if digital_borger:
+        data["note"] = f"{dags_dato}: Tom - Bedt om kontrakt - Tyra"
+    else:
+        data["note"] = f"{dags_dato}: Tom - Borger er ikke digital - Tyra"
