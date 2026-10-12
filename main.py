@@ -126,7 +126,6 @@ if __name__ == "__main__":
         base_url=eflyt_credentials.data["url"],
         username=eflyt_credentials.username,
         password=eflyt_credentials.password,
-        headless=False
     )
 
     tracker = Tracker(
