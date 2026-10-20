@@ -39,7 +39,7 @@ def populate_queue(workqueue: Workqueue):
     logger.info("Hello from populate workqueue!")
 
     # Svarer til "Sæt datoer" i Blue Prism-processen.
-    flyttedato_fra = (datetime.now() - timedelta(days=4)).strftime("%d-%m-%Y")
+    flyttedato_fra = (datetime.now() - timedelta(days=6)).strftime("%d-%m-%Y")
     flyttedato_til = (datetime.now() + timedelta(days=2)).strftime("%d-%m-%Y")
 
     for proces in FLYTTEPROCESSER:
