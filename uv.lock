@@ -56,8 +56,8 @@ wheels = [
 
 [[package]]
 name = "eflyt-client"
-version = "0.4.0"
-source = { git = "https://github.com/odense-rpa/eflyt-client.git?rev=455c458232aa00342903106023845a9a7a718236#455c458232aa00342903106023845a9a7a718236" }
+version = "0.4.1"
+source = { git = "https://github.com/odense-rpa/eflyt-client.git?rev=e66390192c7a72d585629cd8f552ffc5f9237cda#e66390192c7a72d585629cd8f552ffc5f9237cda" }
 dependencies = [
     { name = "playwright" },
     { name = "pytest" },
@@ -76,7 +76,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "automation-server-client", git = "https://github.com/odense-rpa/automation-server-client.git?tag=v0.4.0" },
-    { name = "eflyt-client", git = "https://github.com/odense-rpa/eflyt-client.git?rev=455c458232aa00342903106023845a9a7a718236" },
+    { name = "eflyt-client", git = "https://github.com/odense-rpa/eflyt-client.git?rev=e66390192c7a72d585629cd8f552ffc5f9237cda" },
     { name = "odk-tools", git = "https://github.com/odense-rpa/odk-tools.git" },
 ]
 
